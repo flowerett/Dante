@@ -30,6 +30,7 @@ class Dante.Editor extends Dante.View
     @extract_url     = opts.extract_url || "http://api.embed.ly/1/extract?key=86c28a410a104c8bb58848733c82f840&url="
     @default_loading_placeholder = opts.default_loading_placeholder || Dante.defaults.image_placeholder
     @store_url       = opts.store_url
+    @store_param     = opts.store_param || "text"
     @spell_check     = opts.spellcheck || false
     @disable_title   = opts.disable_title || false
     @store_interval  = opts.store_interval || 15000
@@ -53,12 +54,12 @@ class Dante.Editor extends Dante.View
     , @store_interval
 
   checkforStore: ()->
-    if @content is @getContent()
+    if @content is @getContent(true)
       utils.log "content not changed skip store"
       @store()
     else
       utils.log "content changed! update"
-      @content = @getContent()
+      @content = @getContent(true)
       $.ajax
         url: @store_url
         method: "post"
@@ -69,8 +70,10 @@ class Dante.Editor extends Dante.View
         complete: (jxhr) =>
           @store()
 
-  getContent: ()->
-    $(@el).find(".section-inner").html()
+  getContent: (only_value = false)->
+    result_hash = {}
+    result_hash[@store_param] = $(@el).find(".section-inner").html()
+    if only_value then result_hash[@store_param] else result_hash
 
   renderTitle: ()->
     "<h3 class='graf graf--h3'>#{@title_placeholder} </h3>"
